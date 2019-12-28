@@ -2,6 +2,10 @@
 #include <stdlib.h>
 #include <time.h>
 
+
+char* getCategory(int x1, int x2);
+
+
 int main() {
     int upper = 2;
     int lower = -2;
@@ -12,4 +16,9 @@ int main() {
         float random_num = ((float)rand() /((float)RAND_MAX /(upper - lower))) + lower;
         printf("%f\n", random_num);
     }
+}
+
+char* getCategory(int x1, int x2){
+    char category[2];
+    
 }
