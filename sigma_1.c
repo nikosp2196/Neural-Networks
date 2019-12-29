@@ -91,7 +91,7 @@ char* getCategory(float x1, float x2){
 }
 
 void generateRandomPair(float* x1, float* x2){
-    *x1 = ((float)rand() /((float)RAND_MAX /(UPPER - LOWER))) - 2;
-    *x2 = ((float)rand() /((float)RAND_MAX /(UPPER - LOWER))) - 2;
+    *x1 = ((float)rand() /((float)RAND_MAX / (UPPER - LOWER))) - 2;
+    *x2 = ((float)rand() /((float)RAND_MAX / (UPPER - LOWER))) - 2;
 }
 
