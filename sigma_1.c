@@ -21,6 +21,7 @@ void generateRandomPair(float* x1, float* x2);
 int c1 = 0;
 int c2 = 0;
 int c3 = 0;
+int count = 0;
 
 int main(){
     char buff[50];
@@ -31,13 +32,13 @@ int main(){
     /* First create a train set and then a the test set.
        For the train set just remove the noise if from the comments.
     */
-    fptr = fopen("test.txt", "w");
+    fptr = fopen("train.txt", "w");
     for(int i = 0; i<3000; i++){
         generateRandomPair(&x, &y);
         strcpy(buff, getCategory(x, y));
         fputs(buff, fptr);
     }
-    printf("c1: %d\nc2: %d\nc3: %d\n", c1,c2,c3);
+    printf("c1: %d\nc2: %d\nc3: %d\nnoise: %d\n", c1,c2,c3,count);
     fclose(fptr);
 }
 
@@ -64,15 +65,15 @@ char* getCategory(float x1, float x2){
     }
 
     //NOISE IF
-    /*
-    if(!strcmp(category, "C1")){
+    
+    if(strcmp(category, "C1") != 0){
         float probability = rand() % 100;
         if (probability<10){
-            //printf("%f\n", probability);
+            count++;
             strcpy(category,"C1");
         }
     }
-    */
+    
 
 
     gcvt(x1, 8, str1);
