@@ -7,7 +7,7 @@
 
 #define FILENAME "groups.txt"
 #define DATA_SIZE 600
-#define M 3 // Number of clusters
+#define M 5 // Number of clusters
 #define D 2 // Dimension of data
 #define R 5 // Number of executions
 
@@ -19,6 +19,7 @@ void calculateAllDistances();
 void updateCentroids();
 int change();
 double getClusteringError();
+int getMinError();
 
 
 FILE* fp;
@@ -30,7 +31,7 @@ double centroids[R][M][D];
 int counter[M];                     // Counts the elements of every cluster
 double distances[R][DATA_SIZE][M];     // Stores all distances from every cluster
 int t;                              // Season counter
-int r;
+int r;                              // Round id
 double errors[R];
 
 
@@ -47,7 +48,9 @@ int main(int argc, char** argv) {
     for (int i = 0; i < DATA_SIZE; i++){
         loadLine(i);
     }
+
     fclose(fp);
+
 
     for (r = 0; r < R; r++){
         printf("----------EXECUTION: %d\n", r);
@@ -63,7 +66,17 @@ int main(int argc, char** argv) {
         printf("$$$$ ERROR = %lf $$$$\n", errors[r]);
     }
     
+    r = getMinError();
     
+
+    fp = fopen("clustered.txt", "w");
+    for (int i = 0; i< DATA_SIZE; i++){
+        fprintf(fp, "%d %f %f\n", clusters[r][i], data[i][0], data[i][1]);
+    }
+    for (int i = 0; i < M; i++){
+        fprintf(fp, "%s %f %f\n", "C", centroids[r][i][0], centroids[r][i][1]);
+    }
+    fclose(fp);
     /*
     printf("DATA--> x1 = %lf  x2 = %lf\n", data[0][0], data[0][1]);
     printf("CENTROID--> x1 = %lf  x2 = %lf\n", centroids[0][0], centroids[0][1]);
@@ -77,12 +90,11 @@ int main(int argc, char** argv) {
 }
 
 void loadLine(int i){
-    char buff[10];
 
-    fscanf(fp, "%s", buff);
+    fscanf(fp, "%d", &groups[i]);
 
 
-    groups[i] = (int)buff[1] - 48 - 1;
+    //groups[i] = (int)buff - 48 - 1;
 
 
     fscanf(fp, "%lf", &data[i][0]);
@@ -175,4 +187,16 @@ double getClusteringError(){
         }
     }
     return error;
+}
+
+int getMinError(){
+    double minValue=10000;
+    int minIndex = 0;
+    for (int i = 0; i < R; i++){
+        if (minValue > errors[i]){
+            minValue = errors[i];
+            minIndex = i;
+        }
+    }
+    return minIndex;
 }

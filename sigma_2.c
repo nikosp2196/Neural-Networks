@@ -22,22 +22,22 @@ int main(){
         
         if(i<100){
             getPairInCircle(&x1, &x2, 0.3);
-            strcpy(team, "T1");
+            strcpy(team, "0");
         }else if(i>99 && i<200){
             getPairInRectangle(&x1, &x2, -1.1, -0.5, 0.5, 1.1);
-            strcpy(team, "T2");
+            strcpy(team, "1");
         }else if(i>199 && i<300){
             getPairInRectangle(&x1, &x2, -1.1, -0.5, -1.1, -0.5);
-            strcpy(team, "T3");
+            strcpy(team, "2");
         }else if(i>299 && i<400){
             getPairInRectangle(&x1, &x2, 0.5, 1.1, -1.1, -0.5);
-            strcpy(team, "T4");
+            strcpy(team, "3");
         }else if(i>399 && i<500){
             getPairInRectangle(&x1, &x2, 0.5, 1.1, 0.5, 1.1);
-            strcpy(team, "T5");
+            strcpy(team, "4");
         }else if(i>499 && i<600){
             getPairInRectangle(&x1, &x2, -1, 1, -1, 1);
-            strcpy(team, "T6");
+            strcpy(team, "5");
         }else{
             printf("Oh lord!!! It got out of the loop.");
             exit(0);
