@@ -99,7 +99,7 @@ char* getCategory(float x1, float x2, FILE* fptr){
 
     //NOISE IF
     
-    if(!strcmp(category, "C1")){
+    if(strcmp(category, "C1")!=0){
 
         float probability = rand() % 100;
 
