@@ -7,10 +7,10 @@
 
 #define FILENAME "groups.txt"
 #define DATA_SIZE 600
-#define M 6 // Number of groups
+#define M 10 // Number of groups
 #define D 2 // Dimension of data
 #define R 5 // Number of executions
-#define S 20// Number of seasons
+#define S 5// Number of seasons
 
 void loadLine(int i);
 void initialize();
@@ -73,7 +73,7 @@ int main(int argc, char** argv) {
         fprintf(fp, "%d %f %f\n", groups[i], data[i][0], data[i][1]);
     }
     for (int i = 0; i < M; i++){
-        fprintf(fp, "%s %f %f\n", "C", centroids[r][i][0], centroids[r][i][1]);
+        fprintf(fp, "%s %f %f %d\n", "C", centroids[r][i][0], centroids[r][i][1], centroid_labels[r][i]);
     }
     fclose(fp);
 
@@ -89,15 +89,21 @@ void loadLine(int i){
 void initialize(){
     int temp, flag = 1;
     for(int i = 0; i < M; i++){
-        while (flag == 1){
-            temp = rand() % DATA_SIZE;
-            flag = 0;
-            centroid_labels[r][i] = groups[temp]; // LVQ: set centroid labels
-            for (int j = 0; j<i; j++){
-                if(centroid_labels[r][i] == centroid_labels[r][j]) {
-                    flag = 1;
+
+        if (M <= 6){
+            while (flag == 1){
+                temp = rand() % DATA_SIZE;
+                flag = 0;
+                centroid_labels[r][i] = groups[temp]; // LVQ: set centroid labels
+                for (int j = 0; j<i; j++){
+                    if(centroid_labels[r][i] == centroid_labels[r][j]) {
+                        flag = 1;
+                    }
                 }
             }
+        }else{
+            temp = rand() % DATA_SIZE;
+            centroid_labels[r][i] = groups[temp];
         }
         printf("%d) Label: %d \n", i, centroid_labels[r][i]);
         flag = 1;
