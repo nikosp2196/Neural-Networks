@@ -6,7 +6,7 @@ x = []
 y = []
 c = []
 
-with open("clustered.txt") as f:
+with open("lvq_clustered.txt") as f:
     lines = f.readlines()
     for l in lines:
         temp = l.split()

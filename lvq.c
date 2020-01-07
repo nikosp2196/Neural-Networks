@@ -7,7 +7,7 @@
 
 #define FILENAME "groups.txt"
 #define DATA_SIZE 600
-#define M 5 // Number of groups
+#define M 6 // Number of groups
 #define D 2 // Dimension of data
 #define R 5 // Number of executions
 #define S 20// Number of seasons
@@ -16,6 +16,7 @@ void loadLine(int i);
 void initialize();
 double getDistance(int i, int c);
 void calculateAllDistances();
+int getMinDist(int i);
 void updateCentroids(int i, int cluster);
 double getClusteringError();
 int getMinError();
@@ -58,7 +59,6 @@ int main(int argc, char** argv) {
         while(t < S){
             printf("Season: %d\n", t);
             calculateAllDistances();
-            //printf("WHERE ARE YOU BUG???\n");
             h *= 0.95;
             t++;
         }
@@ -81,7 +81,6 @@ int main(int argc, char** argv) {
 }
 
 void loadLine(int i){
-
     fscanf(fp, "%d", &groups[i]);
     fscanf(fp, "%lf", &data[i][0]);
     fscanf(fp, "%lf", &data[i][1]);
@@ -90,9 +89,8 @@ void loadLine(int i){
 void initialize(){
     int temp, flag = 1;
     for(int i = 0; i < M; i++){
-        temp = rand() % DATA_SIZE;
-        centroid_labels[r][i] = groups[temp]; // LVQ: set centroid labels
         while (flag == 1){
+            temp = rand() % DATA_SIZE;
             flag = 0;
             centroid_labels[r][i] = groups[temp]; // LVQ: set centroid labels
             for (int j = 0; j<i; j++){
@@ -101,6 +99,8 @@ void initialize(){
                 }
             }
         }
+        printf("%d) Label: %d \n", i, centroid_labels[r][i]);
+        flag = 1;
         centroids[r][i][0] = data[temp][0];
         centroids[r][i][1] = data[temp][1];
     }
@@ -123,26 +123,28 @@ double getDistance(int i, int c){
 }
 
 void calculateAllDistances(){
+    for (int i = 0; i < DATA_SIZE; i++){
+        updateCentroids(i,getMinDist(i));
+    }
+}
+
+int getMinDist(int i){
     double mindist;
     int cluster;
-    float tmp;
-    for (int i = 0; i < DATA_SIZE; i++){
-        mindist = 10000;
-        cluster = -1;
-        for (int j = 0; j < M; j++){   
-            printf("CENTER X1: %f X2: %f CATEGORY: %d\n",centroids[r][j][1], centroids[r][j][1], centroid_labels[r][j]);
-            distances[r][i][j] = getDistance(i,j); // Dist(i,j)
-            if(mindist > distances[r][i][j]){      // Check for min
-               
-                mindist = distances[r][i][j];
-                cluster = j;                       // The closest cluster
-            }
+
+    distances[r][i][0] = getDistance(i,0);
+    mindist = distances[r][i][0];
+    cluster = 0;
+    //printf("BEFORE SEASON: %d DATA ID: %d  Min Dist: %f \n", t, i, mindist);
+    for (int j = 1; j < M; j++){
+        distances[r][i][j] = getDistance(i,j); // Dist( i,j)
+        if(mindist > distances[r][i][j]){      // Check for min
+            mindist = distances[r][i][j];
+            cluster = j;                       // The closest cluster
         }
-        exit(0);
-        updateCentroids(i,cluster);
-        tmp = getDistance(i,cluster);
     }
-    //printf("WHERE ARE YOU BUG???\n");
+    return cluster;
+    //printf("AFTER  DATA ID: %d  Min Dist: %f \n", i, mindist);
 }
 
 void updateCentroids(int i, int cluster) {
@@ -157,15 +159,17 @@ void updateCentroids(int i, int cluster) {
 }
 
 double getClusteringError(){
+    //printf("WHERE ARE YOU BUG???\n");
     double error = 0;
     for (int m = 0; m < M; m++){
         for(int d = 0; d < DATA_SIZE; d++){
             // Add only the data that map to the current cluster.
             if (centroid_labels[r][m] == groups[d]){
-                error += distances[r][d][centroid_labels[r][d]];
+                error += distances[r][d][m];
             }
         }
     }
+    //printf("WHERE ARE YOU BUG???\n");
     return error;
 }
 
