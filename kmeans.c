@@ -25,11 +25,11 @@ int getMinError();
 FILE* fp;
 int groups[DATA_SIZE];              // True labels
 double data[DATA_SIZE][D];          // Data
-int clusters[R][DATA_SIZE];            // Predicted labels
+int clusters[R][DATA_SIZE];         // Predicted labels
 double previous_centroids[M][D];
 double centroids[R][M][D];
 int counter[M];                     // Counts the elements of every cluster
-double distances[R][DATA_SIZE][M];     // Stores all distances from every cluster
+double distances[R][DATA_SIZE][M];  // Stores all distances from every cluster
 int t;                              // Season counter
 int r;                              // Round id
 double errors[R];

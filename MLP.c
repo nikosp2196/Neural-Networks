@@ -247,7 +247,7 @@ void gradient_descent(){
 
         for(i = s; i < s + L; i++){
  
-            for(j = 0; j < 5; j++){
+            for(j = 0; j < 6; j++){
 
                 parameters[j] = train_set[i][j];
             }
@@ -279,7 +279,7 @@ void gradient_descent(){
    		
 	        for(i = s; i < s + L; i++){
 	        
-	            for(j = 0; j < 5; j++){
+	            for(j = 0; j < 6; j++){
 
 	                parameters[j] = train_set[i][j];
 
