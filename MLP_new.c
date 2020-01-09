@@ -5,8 +5,8 @@
 
 #define d 2 
 #define K 3 
-#define H1 8 // 5,7,8
-#define H2 6 // 3,4,5
+#define H1 5 // 5,7,8
+#define H2 4 // 3,4,5
 #define func 0 // 0: tanh   1: linear
 #define n 0.1 
 #define L 3000 // 1, 30, 300, 3000 Batch size
@@ -29,6 +29,8 @@ void update_weights();
 void test_network();
 void gradient_descent();
 void set_pd_to_zero();
+int getWinnerNeuron();
+
 
 float train_set[3000][5];
 float test_set[3000][5];
@@ -53,7 +55,7 @@ float pd_exit_h2[K][H2+1];
 float pd_h2_h1[H2][H1+1];
 float pd_h1_insert[H1][d+1];
 // Square errors
-float current_square_error = 100000;
+float current_square_error =  0;
 float previous_square_error = 0;
 
 
@@ -180,9 +182,6 @@ void forward_pass(float parameters[5]){
 
 
         exit_hidden1[i] = logistic(tmp);
-        if (exit_hidden1[i] != exit_hidden1[i]){
-            exit(0);
-        }
         
     }
 
@@ -217,8 +216,6 @@ void forward_pass(float parameters[5]){
         exit_level[i] = logistic(tmp);
 
     }
-
-    // calculate_square_errors(parameters);
 
 }
 
@@ -299,7 +296,9 @@ float random_weight_value(){
 
     int upper = 1, lower = -1;
 
-    return ((float)rand() / ((float)RAND_MAX / (upper - lower))) + lower;
+    float scale = rand() / (float) RAND_MAX;
+
+    return lower + scale * (upper - lower);
 
 }
 
@@ -365,29 +364,32 @@ void gradient_descent(){
     double error_diff;
     int epoch_count = 0;
     int batch_count;
+    int L_3K = 0;
 
     while( epoch_count < 500 || error_diff >= 0.001 ) {
         
+        printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>EPOCH: %d\n", epoch_count);
         batch_count = 0; 
         
         for (int i = 0; i < 3000; i++){
-            printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>EPOCH: %d ID: %d\n", epoch_count, i);
+            //printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>EPOCH: %d ID: %d\n", epoch_count, i);
             
             backprop(train_set[i]);
 
             if (batch_count == L-1){
                 
                 update_weights();
-                batch_count = 0;
+                batch_count = -1;
                 set_pd_to_zero();
-
+                printf("MPHKA %d\n", L_3K);
+                L_3K++;
             }
             batch_count++;
         }
         
         
         calculate_square_errors();
-        error_diff = abs(current_square_error - previous_square_error);
+        error_diff = fabs(current_square_error - previous_square_error);
         epoch_count++;
         fprintf(fp," epoch %d - square error  : %f \n", epoch_count, current_square_error);
 
@@ -403,7 +405,7 @@ void calculate_pd(float parameters[5]){
         
         for (int j = 1; j < H2+1; j++){
         
-            pd_exit_h2[i][j] += delta_[i] * exit_hidden2[j];
+            pd_exit_h2[i][j] += delta_[i] * exit_hidden2[j-1];
         
         }
    
@@ -415,7 +417,7 @@ void calculate_pd(float parameters[5]){
         
         for (int j = 1; j < H1+1; j++){
         
-            pd_h2_h1[i][j] += delta_hidden2[i] * exit_hidden1[j];
+            pd_h2_h1[i][j] += delta_hidden2[i] * exit_hidden1[j-1];
         
         }
    
@@ -427,7 +429,7 @@ void calculate_pd(float parameters[5]){
         
         for (int j = 1; j < d+1; j++){
         
-            pd_h1_insert[i][j] += delta_hidden1[i] * parameters[j+3];
+            pd_h1_insert[i][j] += delta_hidden1[i] * parameters[j+2];
         
         }
    
@@ -489,24 +491,37 @@ void calculate_square_errors(){
 
         }
         
-        result += pow(tmp, 2) / 2.0;
+        result += pow(tmp, 2);
 
     }
     previous_square_error = current_square_error;
-    current_square_error = result;
+    current_square_error = result / 2;
 
-    printf("PREVIOUS SQUARE ERROR:")
+    //printf("PREVIOUS SQUARE ERROR: %f\n", previous_square_error);
+    //printf("CURRENT SQUARE ERROR: %f\n", current_square_error);
+
 }
 
 void test_network(){
-
+    int winner_n;
+    int correct = 0;
+    float correct_ratio;
     for (int i = 0; i < 3000; i++){
-
+        
         forward_pass(test_set[i]); // Run one by one the examples
+        winner_n = getWinnerNeuron();
+        if (test_set[i][winner_n] > 0) {
+            // Correct prediction
+            correct++;
+        } else {
+            // False prediction
+        }
         //printf("EXIT NEURONS: %f %f %f\n", exit_level[0], exit_level[1], exit_level[2]);
         //printf("ACTUAL CATEGORY: %f %f %f\n", test_set[i][0], test_set[i][1], test_set[i][2]);
 
     }
+    correct_ratio = (float)correct / 3000;
+    printf("CORRECT PREDICTION RATIO: %f\n", correct_ratio);
 }
 
 void set_pd_to_zero(){
@@ -529,4 +544,17 @@ void set_pd_to_zero(){
         }
     }
 
+}
+
+int getWinnerNeuron(){
+    float max_value =  exit_level[0];
+    float max_index = 0;
+
+    for (int i = 1; i < K; i++){
+        if (exit_level[i] > max_value) {
+            max_value = exit_level[i];
+            max_index = i;
+        }
+    }
+    return max_index;
 }
