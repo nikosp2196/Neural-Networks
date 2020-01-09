@@ -24,7 +24,10 @@ void init_b();
 void initialize_weights();
 void train_network();
 void calculate_pd(float parameters[5]);
+void calculate_square_errors();
 void update_weights();
+void test_network();
+void gradient_descent();
 
 
 float train_set[3000][5];
@@ -53,16 +56,6 @@ float pd_h1_insert[H1][d+1] = { 0 };
 float current_square_error = 100000;
 float previous_square_error = 0;
 
-/*
-float square_error[3000]; 
-float general_error[3000]; 
-
-int right = 0; 
-int wrong = 0; 
-int cntrTrain = 0; 
-int cntrTest = 0; 
-*/
-
 
 FILE *ftrain = NULL; 
 FILE *ftest = NULL; 
@@ -76,6 +69,8 @@ int main(int argc, char** argv) {
     open_files();
     load_data();
 
+    train_network();
+    // test_network();
 }
 
 void open_files(){
@@ -88,7 +83,7 @@ void open_files(){
         exit(1);
 
     }
-
+    /*
     ftest = fopen("test.txt", "r");
 
     if(ftest == NULL){
@@ -139,41 +134,32 @@ void open_files(){
     }
 
     fprintf(fp,"\n\n");
+    */
 }
 
 
 void load_data(){
 
     int i;
+    char skip[5];
 
     for(i=0; i<3000; i++){
 
-        fscanf(ftrain, "%10f", &train_set[i][0]); 
-        fgetc(ftrain);
-        fscanf(ftrain, "%10f", &train_set[i][1]);
-        fgetc(ftrain);
-        fscanf(ftrain, "%10f", &train_set[i][2]);
-        fgetc(ftrain);
-        fgetc(ftrain); //to skip label C1,  C2  C3
-        fgetc(ftrain);
-        fscanf(ftrain, "%10f", &train_set[i][3]);
-        fgetc(ftrain);
-        fscanf(ftrain, "%10f", &train_set[i][4]);
-        fgetc(ftrain);
+        fscanf(ftrain, "%f", &train_set[i][0]);
+        fscanf(ftrain, "%f", &train_set[i][1]);
+        fscanf(ftrain, "%f", &train_set[i][2]);
+        fscanf(ftrain, "%s", skip);
+        fscanf(ftrain, "%f", &train_set[i][3]);
+        fscanf(ftrain, "%f", &train_set[i][4]);
 
-
-        fscanf(ftest, "%10f", &test_set[i][0]); 
-        fgetc(ftest);
-        fscanf(ftest, "%10f", &test_set[i][1]);
-        fgetc(ftest);
-        fscanf(ftest, "%10f", &test_set[i][2]);
-        fgetc(ftest);
-        fgetc(ftest); //to skip label C1,  C2  C3 
-        fgetc(ftest);
-        fscanf(ftest, "%10f", &test_set[i][3]);
-        fgetc(ftest);
-        fscanf(ftest, "%10f", &test_set[i][4]);
-        fgetc(ftest);
+        /*
+        fscanf(ftest, "%f", &test_set[i][0]); 
+        fscanf(ftest, "%f", &test_set[i][1]);
+        fscanf(ftest, "%f", &test_set[i][2]);
+        fscanf(ftest, "%s", skip);
+        fscanf(ftest, "%f", &test_set[i][3]);
+        fscanf(ftest, "%f", &test_set[i][4]);
+        */
     }
 }
 
@@ -182,6 +168,7 @@ void forward_pass(float parameters[5]){
     int i, j;
     float tmp;
     
+    printf("----- OUT H1 -----\n");
     for(i = 0; i < H1; i++){
     
         tmp = b_hidden1[i];
@@ -193,7 +180,10 @@ void forward_pass(float parameters[5]){
 
 
         exit_hidden1[i] = logistic(tmp);
-        
+        printf("Neuron id: %d OUTPUT: %f \n", i, exit_hidden1[i]);
+        if (exit_hidden1[i] != exit_hidden1[i]){
+            exit(0);
+        }
         
     }
 
@@ -335,6 +325,35 @@ void init_b(){
     }
 }
 
+void initialize_weights(){
+
+    int  i, j;
+
+    for(i = 0; i < H1; i++){
+
+        for(j = 0; j < d; j++){
+
+            insert_hidden1_weights[i][j] = random_weight_value();
+        }
+    }
+
+    for(i = 0; i < H2; i++){
+
+        for(j = 0; j < H1; j++){
+
+            hidden1_hidden2_weights[i][j] = random_weight_value();
+        }
+    }
+
+    for(i = 0; i < K; i++){
+
+        for(j = 0; j < H2; j++){
+
+            hidden2_exit_weights[i][j] = random_weight_value();
+        }
+    }
+}
+
 void train_network(){
 
     init_b();
@@ -349,12 +368,12 @@ void gradient_descent(){
     int epoch_count = 0;
     int batch_count;
 
-    while(epoch_count <= 500 || error_diff >= 0.01) {
+    while(epoch_count <= 500 || error_diff >= 0.1) {
         
         batch_count = 0; 
         
         for (int i = 0; i < 3000; i++){
-
+            printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>EPOCH: %d ID: %d\n", epoch_count, i);
             batch_count ++;
             backprop(train_set[i]);
 
@@ -366,7 +385,8 @@ void gradient_descent(){
 
             }
         }
-
+        
+        
         calculate_square_errors();
         error_diff = abs(current_square_error - previous_square_error);
         epoch_count++;
@@ -475,4 +495,15 @@ void calculate_square_errors(){
     }
     previous_square_error = current_square_error;
     current_square_error = result;
+}
+
+void test_network(){
+
+    for (int i = 0; i < 3000; i++){
+
+        forward_pass(test_set[i]); // Run one by one the examples
+        //printf("EXIT NEURONS: %f %f %f\n", exit_level[0], exit_level[1], exit_level[2]);
+        //printf("ACTUAL CATEGORY: %f %f %f\n", test_set[i][0], test_set[i][1], test_set[i][2]);
+
+    }
 }
