@@ -9,7 +9,7 @@
 #define H2 6 // 3,4,5
 #define func 0 // 0: tanh   1: linear
 #define n 0.1 
-#define L  300 // 1, 300, 3000 Batch size
+#define L  1 // 1, 30, 300, 3000 Batch size
 
 
 void open_files();
@@ -23,7 +23,8 @@ float linear(float x);
 void init_b();
 void initialize_weights();
 void train_network();
-
+void calculate_pd(float parameters[5]);
+void update_weights();
 
 
 float train_set[3000][5];
@@ -44,6 +45,10 @@ float exit_level[K];
 float delta_hidden1[H1]; 
 float delta_hidden2[H2]; 
 float delta_[K];
+// Partial derivatives
+float pd_exit_h2[K][H2+1] = { 0 };
+float pd_h2_h1[H2][H1+1] = { 0 };
+float pd_h1_insert[H1][d+1] = { 0 };
 
 /*
 float square_error[3000]; 
@@ -295,6 +300,7 @@ void backprop(float parameters[5]){
 
     forward_pass(parameters);
     reverse(parameters);
+    calculate_pd(parameters);
 
 }
 
@@ -335,6 +341,110 @@ void train_network(){
 }
 
 void gradient_descent(){
-
     
+    double error_diff;
+    int epoch_count = 0;
+    int batch_count;
+
+    while(epoch_count <= 500 || error_diff >= 0.01) {
+        
+        batch_count = 0; 
+        
+        for (int i = 0; i < 3000; i++){
+
+            batch_count ++;
+            backprop(train_set[i]);
+
+            if (batch_count == L){
+                
+                update_weights();
+                batch_count = 0;
+                // UPDATE weights
+
+            }
+        }
+
+
+        epoch_count++;
+    }
+    
+}
+
+void calculate_pd(float parameters[5]){
+
+    for (int i = 0; i < K; i++) {
+
+        pd_exit_h2[i][0] += delta_[i];
+        
+        for (int j = 1; j < H2+1; j++){
+        
+            pd_exit_h2[i][j] += delta_[i] * exit_hidden2[j];
+        
+        }
+   
+    }
+
+    for (int i = 0; i < H2; i++) {
+
+        pd_h2_h1[i][0] += delta_hidden2[i];
+        
+        for (int j = 1; j < H1+1; j++){
+        
+            pd_h2_h1[i][j] += delta_hidden2[i] * exit_hidden1[j];
+        
+        }
+   
+    }
+    
+    for (int i = 0; i < H1; i++) {
+
+        pd_h1_insert[i][0] += delta_hidden1[i];
+        
+        for (int j = 1; j < d+1; j++){
+        
+            pd_h1_insert[i][j] += delta_hidden1[i] * parameters[j+3];
+        
+        }
+   
+    }
+
+}
+
+void update_weights(){
+    
+    for (int i = 0; i < K; i++) {
+
+        bel[i] -= n * pd_exit_h2[i][0];
+        
+        for (int j = 1; j < H2+1; j++){
+        
+            hidden2_exit_weights[i][j-1] -= n * pd_exit_h2[i][j];
+        
+        }
+   
+    }
+
+    for (int i = 0; i < H2; i++) {
+
+        b_hidden2[i] -= n * pd_h2_h1[i][0];
+        
+        for (int j = 1; j < H1+1; j++){
+        
+            hidden1_hidden2_weights[i][j-1] -= n * pd_h2_h1[i][j];
+        
+        }
+   
+    }
+    
+    for (int i = 0; i < H1; i++) {
+
+        b_hidden1[i] -= pd_h1_insert[i][0];
+        
+        for (int j = 1; j < d+1; j++){
+        
+            insert_hidden1_weights[i][j-1] -= n * pd_h1_insert[i][j];
+        
+        }
+   
+    }
 }
