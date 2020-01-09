@@ -171,8 +171,8 @@ float random_weight_value(){
 
 	float_random_num = (RAND_MAX - rand()) / (float)(RAND_MAX); 
   	random_num = rand() % 2;
-	if (random_num == 2) return float_random_num;
-	return (-2 * float_random_num);
+	if (random_num == 1) return float_random_num;
+	return (-1 * float_random_num);
 }
 
 void initialize_training(){
@@ -427,7 +427,7 @@ void reverse(float parameters[6]){
 	double tmp;
 
     for(i = 0; i < K; i++){
-
+        
         delta_[i] = exit_level[i] * (1 - exit_level[i]) * (exit_level[i] - parameters[i]);
 
     }
@@ -439,7 +439,7 @@ void reverse(float parameters[6]){
         for(j = 0; j < K; j++){
             tmp = tmp + hidden1_hidden2_weights[i][j] * delta_[j];
         }
-
+        // FIX THIS: Linear or Logistic function
         if(func == 1){
         	delta_hidden2[i] = exit_hidden2[i] * (1 - exit_hidden2[i]) * tmp;
 
