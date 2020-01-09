@@ -18,20 +18,20 @@ void initialize_training();
 void initialize_weights();
 void initB();
 float random_weight_value();
-void forward_pass(float parameters[6]);
-void forward_pass_test_set(float parameters[6]);
-void reverse(float parameters[6]);
-void backprop(float parameters[6]);
+void forward_pass(float parameters[5]);
+void forward_pass_test_set(float parameters[5]);
+void reverse(float parameters[5]);
+void backprop(float parameters[5]);
 void gradient_descent();
 
-void calculate_square_errors(float parameters[6]);
-void calculate_general_error(float parameters[6]);
+void calculate_square_errors(float parameters[5]);
+void calculate_general_error(float parameters[5]);
 void calculate_weights();
 void final_results(int r,int w);
 
 
-float train_set[3000][6]; 
-float test_set[3000][6]; 
+float train_set[3000][5]; 
+float test_set[3000][5]; 
 
 float insert_hidden1_weights[H1][d]; 
 float hidden1_hidden2_weights[H2][H1]; 
@@ -233,7 +233,7 @@ void initB(){
 
 void gradient_descent(){
 
-    float parameters[6], square_error_after = 0.0, square_error_before = 0.0;
+    float parameters[5], square_error_after = 0.0, square_error_before = 0.0;
     float diff;
     double r;
     int i, j, k, epoch, l, s;
@@ -337,15 +337,15 @@ void gradient_descent(){
 
 }
 
-void backprop(float parameters[6]){
+void backprop(float parameters[5]){
 
     forward_pass(parameters);
     reverse(parameters);
-
+    
 }
 
 
-void forward_pass(float parameters[6]){
+void forward_pass(float parameters[5]){
 
     int i, j;
     float tmp;
@@ -405,7 +405,7 @@ void forward_pass(float parameters[6]){
 }
 
 
-void calculate_square_errors(float parameters[6]){
+void calculate_square_errors(float parameters[5]){
 
 	int i;
 	
@@ -421,7 +421,7 @@ void calculate_square_errors(float parameters[6]){
 }
 
 
-void reverse(float parameters[6]){
+void reverse(float parameters[5]){
 
 	int i, j;
 	double tmp;
@@ -515,7 +515,7 @@ void calculate_weights(){
 
 
 
-void forward_pass_test_set(float parameters[6]){
+void forward_pass_test_set(float parameters[5]){
 
     int i,j;
     float tmp;
@@ -577,7 +577,7 @@ void forward_pass_test_set(float parameters[6]){
 }
 
 
-void calculate_general_error(float parameters[6]){
+void calculate_general_error(float parameters[5]){
 
 	int i;
 
@@ -613,7 +613,7 @@ void final_results(int r, int w){
 int main(int argc, char** argv) {
 
     int i, j, flag;
-    float x[6];
+    float x[5];
 
     open_files();
     load_data();

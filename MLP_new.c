@@ -9,7 +9,7 @@
 #define H2 6 // 3,4,5
 #define func 0 // 0: tanh   1: linear
 #define n 0.1 
-#define L  1 // 1, 30, 300, 3000 Batch size
+#define L 3000 // 1, 30, 300, 3000 Batch size
 
 
 void open_files();
@@ -28,7 +28,7 @@ void calculate_square_errors();
 void update_weights();
 void test_network();
 void gradient_descent();
-
+void set_pd_to_zero();
 
 float train_set[3000][5];
 float test_set[3000][5];
@@ -49,9 +49,9 @@ float delta_hidden1[H1];
 float delta_hidden2[H2]; 
 float delta_[K];
 // Partial derivatives
-float pd_exit_h2[K][H2+1] = { 0 };
-float pd_h2_h1[H2][H1+1] = { 0 };
-float pd_h1_insert[H1][d+1] = { 0 };
+float pd_exit_h2[K][H2+1];
+float pd_h2_h1[H2][H1+1];
+float pd_h1_insert[H1][d+1];
 // Square errors
 float current_square_error = 100000;
 float previous_square_error = 0;
@@ -65,12 +65,13 @@ FILE *fwrong = NULL;
 
 int main(int argc, char** argv) {
     srand(time(0));
+    set_pd_to_zero();
 
     open_files();
     load_data();
 
     train_network();
-    // test_network();
+    test_network();
 }
 
 void open_files(){
@@ -83,7 +84,7 @@ void open_files(){
         exit(1);
 
     }
-    /*
+    
     ftest = fopen("test.txt", "r");
 
     if(ftest == NULL){
@@ -134,7 +135,7 @@ void open_files(){
     }
 
     fprintf(fp,"\n\n");
-    */
+    
 }
 
 
@@ -152,14 +153,14 @@ void load_data(){
         fscanf(ftrain, "%f", &train_set[i][3]);
         fscanf(ftrain, "%f", &train_set[i][4]);
 
-        /*
+        
         fscanf(ftest, "%f", &test_set[i][0]); 
         fscanf(ftest, "%f", &test_set[i][1]);
         fscanf(ftest, "%f", &test_set[i][2]);
         fscanf(ftest, "%s", skip);
         fscanf(ftest, "%f", &test_set[i][3]);
         fscanf(ftest, "%f", &test_set[i][4]);
-        */
+        
     }
 }
 
@@ -168,7 +169,6 @@ void forward_pass(float parameters[5]){
     int i, j;
     float tmp;
     
-    printf("----- OUT H1 -----\n");
     for(i = 0; i < H1; i++){
     
         tmp = b_hidden1[i];
@@ -180,7 +180,6 @@ void forward_pass(float parameters[5]){
 
 
         exit_hidden1[i] = logistic(tmp);
-        printf("Neuron id: %d OUTPUT: %f \n", i, exit_hidden1[i]);
         if (exit_hidden1[i] != exit_hidden1[i]){
             exit(0);
         }
@@ -243,7 +242,6 @@ void reverse(float parameters[5]){
             tmp = tmp + hidden2_exit_weights[j][i] * delta_[j];
 
         }
-        // FIX THIS: Linear or Logistic function
         if(func == 1){
 
         	delta_hidden2[i] = tmp;
@@ -368,22 +366,23 @@ void gradient_descent(){
     int epoch_count = 0;
     int batch_count;
 
-    while(epoch_count <= 500 || error_diff >= 0.1) {
+    while( epoch_count < 500 || error_diff >= 0.001 ) {
         
         batch_count = 0; 
         
         for (int i = 0; i < 3000; i++){
             printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>EPOCH: %d ID: %d\n", epoch_count, i);
-            batch_count ++;
+            
             backprop(train_set[i]);
 
-            if (batch_count == L){
+            if (batch_count == L-1){
                 
                 update_weights();
                 batch_count = 0;
-                // UPDATE weights
+                set_pd_to_zero();
 
             }
+            batch_count++;
         }
         
         
@@ -479,7 +478,7 @@ void calculate_square_errors(){
 
     float tmp;
     float result = 0;
-
+    
     for (int i = 0; i < 3000; i++){
 
         tmp  = 0;
@@ -489,12 +488,14 @@ void calculate_square_errors(){
             tmp += train_set[i][j] - exit_level[j]; 
 
         }
-
+        
         result += pow(tmp, 2) / 2.0;
 
     }
     previous_square_error = current_square_error;
     current_square_error = result;
+
+    printf("PREVIOUS SQUARE ERROR:")
 }
 
 void test_network(){
@@ -506,4 +507,26 @@ void test_network(){
         //printf("ACTUAL CATEGORY: %f %f %f\n", test_set[i][0], test_set[i][1], test_set[i][2]);
 
     }
+}
+
+void set_pd_to_zero(){
+
+    for (int i = 0; i < K; i++) {
+        for (int j = 0; j < H2+1; j++){
+            pd_exit_h2[i][j] = 0;
+        }
+    }
+
+    for (int i = 0; i < H2; i++) {
+        for (int j = 0; j < H1+1; j++){
+            pd_h2_h1[i][j] = 0;
+        }
+    }
+
+    for (int i = 0; i < H1; i++) {
+        for (int j = 0; j < d+1; j++){
+            pd_h1_insert[i][j] = 0;
+        }
+    }
+
 }
