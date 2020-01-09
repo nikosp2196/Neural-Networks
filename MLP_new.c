@@ -49,6 +49,9 @@ float delta_[K];
 float pd_exit_h2[K][H2+1] = { 0 };
 float pd_h2_h1[H2][H1+1] = { 0 };
 float pd_h1_insert[H1][d+1] = { 0 };
+// Square errors
+float current_square_error = 100000;
+float previous_square_error = 0;
 
 /*
 float square_error[3000]; 
@@ -127,7 +130,7 @@ void open_files(){
     
     if(func == 1){
 
-        fprintf(fp, "Logistic function activated\n");
+        fprintf(fp, "Linear function activated\n");
     
     }else{
 
@@ -364,8 +367,11 @@ void gradient_descent(){
             }
         }
 
-
+        calculate_square_errors();
+        error_diff = abs(current_square_error - previous_square_error);
         epoch_count++;
+        fprintf(fp," epoch %d - square error  : %f \n", epoch_count, current_square_error);
+
     }
     
 }
@@ -447,4 +453,26 @@ void update_weights(){
         }
    
     }
+}
+
+void calculate_square_errors(){
+
+    float tmp;
+    float result = 0;
+
+    for (int i = 0; i < 3000; i++){
+
+        tmp  = 0;
+
+        for (int j = 0; j < K; j++){
+
+            tmp += train_set[i][j] - exit_level[j]; 
+
+        }
+
+        result += pow(tmp, 2) / 2.0;
+
+    }
+    previous_square_error = current_square_error;
+    current_square_error = result;
 }
