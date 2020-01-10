@@ -5,11 +5,11 @@
 
 #define d 2 
 #define K 3 
-#define H1 5 // 5,7,8
-#define H2 4 // 3,4,5
+#define H1 8 // 5,7,8
+#define H2 5 // 3,4,5
 #define func 0 // 0: tanh   1: linear
 #define n 0.1 
-#define L 3000 // 1, 30, 300, 3000 Batch size
+#define L 30 // 1, 30, 300, 3000 Batch size
 
 
 void open_files();
@@ -63,7 +63,6 @@ FILE *ftrain = NULL;
 FILE *ftest = NULL; 
 FILE *fp = NULL;
 FILE *fright = NULL;
-FILE *fwrong = NULL;
 
 int main(int argc, char** argv) {
     srand(time(0));
@@ -74,6 +73,11 @@ int main(int argc, char** argv) {
 
     train_network();
     test_network();
+
+    fclose(ftrain);
+    fclose(ftest);
+    fclose(fp);
+    fclose(fright);
 }
 
 void open_files(){
@@ -105,17 +109,7 @@ void open_files(){
 
     }
 
-
-    fwrong = fopen("wrong_decisions.txt", "w");
-
-    if(fwrong == NULL){
-    
-        fprintf(stderr, "File cannot open \n");
-        exit(1);
-
-    }
-
-    fright = fopen("right_decisions.txt", "w");
+    fright = fopen("results.txt", "w");
 
     if(fright == NULL){
     
@@ -366,13 +360,12 @@ void gradient_descent(){
     int batch_count;
     int L_3K = 0;
 
-    while( epoch_count < 500 || error_diff >= 0.001 ) {
+    while( (epoch_count < 500 || error_diff >= 0.001) && epoch_count < 8000) {
         
         printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>EPOCH: %d\n", epoch_count);
         batch_count = 0; 
         
         for (int i = 0; i < 3000; i++){
-            //printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>EPOCH: %d ID: %d\n", epoch_count, i);
             
             backprop(train_set[i]);
 
@@ -381,7 +374,6 @@ void gradient_descent(){
                 update_weights();
                 batch_count = -1;
                 set_pd_to_zero();
-                printf("MPHKA %d\n", L_3K);
                 L_3K++;
             }
             batch_count++;
@@ -512,9 +504,11 @@ void test_network(){
         winner_n = getWinnerNeuron();
         if (test_set[i][winner_n] > 0) {
             // Correct prediction
+            fprintf(fright,"%d)Actual Category %d%d%d___Exit Level %f %f %f     ++\n", i, (int)test_set[i][0], (int)test_set[i][1], (int)test_set[i][2], exit_level[0], exit_level[1], exit_level[2]);
             correct++;
         } else {
             // False prediction
+            fprintf(fright,"%d)Actual Category %d%d%d___Exit Level %f %f %f     --\n", i, (int)test_set[i][0], (int)test_set[i][1], (int)test_set[i][2], exit_level[0], exit_level[1], exit_level[2]);
         }
         //printf("EXIT NEURONS: %f %f %f\n", exit_level[0], exit_level[1], exit_level[2]);
         //printf("ACTUAL CATEGORY: %f %f %f\n", test_set[i][0], test_set[i][1], test_set[i][2]);
