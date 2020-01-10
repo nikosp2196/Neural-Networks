@@ -7,7 +7,7 @@
 
 #define FILENAME "groups.txt"
 #define DATA_SIZE 600
-#define M 10 // Number of groups
+#define M 6 // Number of groups
 #define D 2 // Dimension of data
 #define R 5 // Number of executions
 #define S 5// Number of seasons

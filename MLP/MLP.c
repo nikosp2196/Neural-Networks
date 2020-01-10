@@ -5,11 +5,11 @@
 
 #define d 2 
 #define K 3 
-#define H1 8 // 5,7,8
-#define H2 5 // 3,4,5
+#define H1 7 // 5,7,8
+#define H2 4 // 3,4,5
 #define func 0 // 0: tanh   1: linear
-#define n 0.1 
-#define L 30 // 1, 30, 300, 3000 Batch size
+#define n 0.01 
+#define L 300 // 1, 30, 300, 3000 Batch size
 
 
 void open_files();
@@ -325,7 +325,9 @@ void initialize_weights(){
         for(j = 0; j < d; j++){
 
             insert_hidden1_weights[i][j] = random_weight_value();
+
         }
+
     }
 
     for(i = 0; i < H2; i++){
@@ -333,7 +335,9 @@ void initialize_weights(){
         for(j = 0; j < H1; j++){
 
             hidden1_hidden2_weights[i][j] = random_weight_value();
+
         }
+
     }
 
     for(i = 0; i < K; i++){
@@ -341,8 +345,11 @@ void initialize_weights(){
         for(j = 0; j < H2; j++){
 
             hidden2_exit_weights[i][j] = random_weight_value();
+
         }
+
     }
+
 }
 
 void train_network(){
@@ -358,9 +365,8 @@ void gradient_descent(){
     double error_diff;
     int epoch_count = 0;
     int batch_count;
-    int L_3K = 0;
 
-    while( (epoch_count < 500 || error_diff >= 0.001) && epoch_count < 8000) {
+    while( (epoch_count < 500 || error_diff >= 0.001) && epoch_count < 2000) {
         
         printf(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>EPOCH: %d\n", epoch_count);
         batch_count = 0; 
@@ -374,7 +380,6 @@ void gradient_descent(){
                 update_weights();
                 batch_count = -1;
                 set_pd_to_zero();
-                L_3K++;
             }
             batch_count++;
         }
@@ -479,11 +484,11 @@ void calculate_square_errors(){
 
         for (int j = 0; j < K; j++){
 
-            tmp += train_set[i][j] - exit_level[j]; 
+            tmp += pow(train_set[i][j] - exit_level[j], 2);
 
         }
         
-        result += pow(tmp, 2);
+        result += tmp;
 
     }
     previous_square_error = current_square_error;
