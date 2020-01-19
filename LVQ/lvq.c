@@ -7,7 +7,7 @@
 
 #define FILENAME "groups.txt"
 #define DATA_SIZE 600
-#define M 6 // Number of groups
+#define M 5 // Number of groups
 #define D 2 // Dimension of data
 #define R 5 // Number of executions
 #define S 5// Number of seasons
@@ -23,10 +23,11 @@ int getMinError();
 
 
 FILE* fp;
-int groups[DATA_SIZE];              // True labels
 double data[DATA_SIZE][D];          // Data
 double centroids[R][M][D];          // Cluster centroids
-int centroid_labels[R][M];          // Centroid labels
+int data_labels[R][DATA_SIZE];      // Data Clusters
+// TODO: Map the new labels to the data and make the necessary changes to the script.
+// TODO: Change the data scripts we dont need labels. These are clustering algorithms.
 double distances[R][DATA_SIZE][M];  // Stores every distance that we calculated
 int r;                              // Round counter
 int t;                              // Season counter
@@ -46,7 +47,7 @@ int main(int argc, char** argv) {
 
     for (int i = 0; i < DATA_SIZE; i++){
         loadLine(i);
-        printf("Category: %d  X1: %f  X2: %f\n", groups[i], data[i][0], data[i][1]);
+        printf("X1: %f  X2: %f\n", data[i][0], data[i][1]);
     }
 
     fclose(fp);
@@ -70,10 +71,10 @@ int main(int argc, char** argv) {
 
     fp = fopen("lvq_clustered.txt", "w");
     for (int i = 0; i< DATA_SIZE; i++){
-        fprintf(fp, "%d %f %f\n", groups[i], data[i][0], data[i][1]);
+        fprintf(fp, "%d %f %f\n",data_labels[r][i], data[i][0], data[i][1]);
     }
     for (int i = 0; i < M; i++){
-        fprintf(fp, "%s %f %f %d\n", "C", centroids[r][i][0], centroids[r][i][1], centroid_labels[r][i]);
+        fprintf(fp, "%s %f %f\n", "C", centroids[r][i][0], centroids[r][i][1]);
     }
     fclose(fp);
 
@@ -81,34 +82,18 @@ int main(int argc, char** argv) {
 }
 
 void loadLine(int i){
-    fscanf(fp, "%d", &groups[i]);
     fscanf(fp, "%lf", &data[i][0]);
     fscanf(fp, "%lf", &data[i][1]);
 }
 
 void initialize(){
-    int temp, flag = 1;
+    int temp;
     for(int i = 0; i < M; i++){
 
-        if (M <= 6){
-            while (flag == 1){
-                temp = rand() % DATA_SIZE;
-                flag = 0;
-                centroid_labels[r][i] = groups[temp]; // LVQ: set centroid labels
-                for (int j = 0; j<i; j++){
-                    if(centroid_labels[r][i] == centroid_labels[r][j]) {
-                        flag = 1;
-                    }
-                }
-            }
-        }else{
-            temp = rand() % DATA_SIZE;
-            centroid_labels[r][i] = groups[temp];
-        }
-        printf("%d) Label: %d \n", i, centroid_labels[r][i]);
-        flag = 1;
+        temp = rand() % DATA_SIZE;
         centroids[r][i][0] = data[temp][0];
         centroids[r][i][1] = data[temp][1];
+
     }
     t = 0;
     h = 0.1;
@@ -149,33 +134,25 @@ int getMinDist(int i){
             cluster = j;                       // The closest cluster
         }
     }
+    data_labels[r][i] = cluster;
     return cluster;
     //printf("AFTER  DATA ID: %d  Min Dist: %f \n", i, mindist);
 }
 
 void updateCentroids(int i, int cluster) {
     //printf("CLUSTER LABEL: %d  ACTUAL LABEL: %d \n",centroid_labels[r][cluster], groups[i]);
-    if (centroid_labels[r][cluster] == groups[i]){
-        centroids[r][cluster][0] = centroids[r][cluster][0] + (h * (data[i][0] - centroids[r][cluster][0]));
-        centroids[r][cluster][1] = centroids[r][cluster][1] + (h * (data[i][1] - centroids[r][cluster][1]));
-    }else{
-        centroids[r][cluster][0] = centroids[r][cluster][0] - (h * (data[i][0] - centroids[r][cluster][0]));
-        centroids[r][cluster][1] = centroids[r][cluster][1] - (h * (data[i][1] - centroids[r][cluster][1]));
-    }
+    centroids[r][cluster][0] = centroids[r][cluster][0] + (h * (data[i][0] - centroids[r][cluster][0]));
+    centroids[r][cluster][1] = centroids[r][cluster][1] + (h * (data[i][1] - centroids[r][cluster][1]));
+
 }
 
 double getClusteringError(){
-    //printf("WHERE ARE YOU BUG???\n");
     double error = 0;
-    for (int m = 0; m < M; m++){
-        for(int d = 0; d < DATA_SIZE; d++){
-            // Add only the data that map to the current cluster.
-            if (centroid_labels[r][m] == groups[d]){
-                error += distances[r][d][m];
-            }
-        }
+    for(int d = 0; d < DATA_SIZE; d++){
+        
+        error += distances[r][d][data_labels[r][d]];
+        
     }
-    //printf("WHERE ARE YOU BUG???\n");
     return error;
 }
 

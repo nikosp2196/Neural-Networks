@@ -8,8 +8,8 @@
 #define H1 7 // 5,7,8
 #define H2 4 // 3,4,5
 #define func 0 // 0: tanh   1: linear
-#define n 0.01 
-#define L 300 // 1, 30, 300, 3000 Batch size
+#define n 0.001 
+#define L 30 // 1, 30, 300, 3000 Batch size
 
 
 void open_files();
@@ -391,7 +391,7 @@ void gradient_descent(){
         fprintf(fp," epoch %d - square error  : %f \n", epoch_count, current_square_error);
 
     }
-    
+    printf("Training Error: %f\n", current_square_error);
 }
 
 void calculate_pd(float parameters[5]){
