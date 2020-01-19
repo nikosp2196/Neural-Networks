@@ -26,8 +26,6 @@ FILE* fp;
 double data[DATA_SIZE][D];          // Data
 double centroids[R][M][D];          // Cluster centroids
 int data_labels[R][DATA_SIZE];      // Data Clusters
-// TODO: Map the new labels to the data and make the necessary changes to the script.
-// TODO: Change the data scripts we dont need labels. These are clustering algorithms.
 double distances[R][DATA_SIZE][M];  // Stores every distance that we calculated
 int r;                              // Round counter
 int t;                              // Season counter
